@@ -1,9 +1,0 @@
-C:\Users\AAA\Documents\Visual Studio 2010\Projects\Minesweeper\MinesweeperShell\bin\Release\MinesweeperShell.XML
-C:\Users\AAA\Documents\Visual Studio 2010\Projects\Minesweeper\MinesweeperShell\bin\Release\MinesweeperShell.exe
-C:\Users\AAA\Documents\Visual Studio 2010\Projects\Minesweeper\MinesweeperShell\bin\Release\MinesweeperShell.pdb
-C:\Users\AAA\Documents\Visual Studio 2010\Projects\Minesweeper\MinesweeperShell\bin\Release\Minesweeper.dll
-C:\Users\AAA\Documents\Visual Studio 2010\Projects\Minesweeper\MinesweeperShell\bin\Release\Minesweeper.pdb
-C:\Users\AAA\Documents\Visual Studio 2010\Projects\Minesweeper\MinesweeperShell\bin\Release\Minesweeper.xml
-C:\Users\AAA\Documents\Visual Studio 2010\Projects\Minesweeper\MinesweeperShell\obj\x86\Release\ResolveAssemblyReference.cache
-C:\Users\AAA\Documents\Visual Studio 2010\Projects\Minesweeper\MinesweeperShell\obj\x86\Release\MinesweeperShell.exe
-C:\Users\AAA\Documents\Visual Studio 2010\Projects\Minesweeper\MinesweeperShell\obj\x86\Release\MinesweeperShell.pdb
