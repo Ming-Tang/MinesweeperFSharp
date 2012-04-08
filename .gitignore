@@ -1,5 +1,5 @@
-bin/
-obj/
+[Bb]in/
+[Oo]bj/
 *.exe
 *.pdb
 *.dll
