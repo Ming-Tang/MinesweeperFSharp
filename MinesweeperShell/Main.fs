@@ -76,7 +76,7 @@ let main (argv : string[]) =
     else
       probe x y b
 
-  let helpMessage = "----- SHiNKiROU.Minesweeper.MinesweeperShell -----
+  let helpMessage = "
 A minesweeper solver written in F#.
 
   - h: show help
@@ -121,7 +121,7 @@ A minesweeper solver written in F#.
       "n", [[IntA; IntA; IntA],
             (fun (args, nargs) ->
               let w, h, n = nargs.[0], nargs.[1], nargs.[2]
-              if w < 5 || h < 5 || w > 80 || h > 80 || n < w * h * 10 / 9 + 9 then
+              if w < 5 || h < 5 || w > 40 || h > 40 || n > w * h * 10 / 9 + 9 then
                 printfn "Invalid board configuration."
               else
                 board := newBoard w h n
@@ -145,17 +145,19 @@ A minesweeper solver written in F#.
           if showAll || (not showAll && (x, y) = (nargs.[0], nargs.[1])) then
             match p with
             | Prob(a, b) -> printfn "(%d, %d) has %d%% (%d/%d) chance of being a mine" x y (a * 100 / b) a b
+            | _ -> () (*
             | HasMine  -> printfn "(%d, %d) is a mine" x y
-            | NoMine -> printfn "(%d, %d) is not a mine" x y) ];
+            | NoMine -> printfn "(%d, %d) is not a mine" x y *)) ];
 
      "c", [[], (fun _ ->
        display := true
+       let hasSln() = (!lastSln
+                       |> Array.filter (function
+                                        | Prob(_, _), _ -> false
+                                        | _, _ -> true)).Length > 0
        polyCheat()
-       while (!board).State = Normal && (!lastSln
-                                         |> Array.filter (function
-                                                          | Prob(_, _), _ -> false
-                                                          | _, _ -> true)).Length > 0 do
-         polyCheat()
+       while (!board).State = Normal && hasSln() do
+         while (!board).State = Normal && hasSln() do polyCheat()
          if (!board).State = Normal then expCheat()
        )];
      "p", [[], (fun _ -> display := true; polyCheat())];
