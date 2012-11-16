@@ -64,7 +64,7 @@ let counting (probs : bool) (board : Board) (idx : Set<Number * Set<int * int>>)
         elif n = byte ss.Count then // all mines
           yield! Seq.zip (yes HasMine) ss
         elif probs && n < byte ss.Count then // get probability
-          yield! Seq.zip (yes <| Prob(int n, ss.Count)) ss
+          yield! Seq.zip (yes <| Prob(ss.Count - int n, ss.Count)) ss
         elif n > byte ss.Count then // this should not happen
           assert false
   }
