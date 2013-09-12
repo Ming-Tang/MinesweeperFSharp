@@ -6,7 +6,7 @@ open SHiNKiROU.Minesweeper.Board
 
 exception TestFail
 
-/// A dependency statement: squares in the Set<Coordinate> depends on the Coordinate
+/// A dependency: squares in the Set<Coordinate> depend on the Coordinate
 type Entry = Coordinate * Set<Coordinate>
 type Index = Entry[]
 type Flag = bool
@@ -25,11 +25,11 @@ type Solution = bool[]
 
 #endregion
 
-(*
+(* Data structures used while solving
 
-      0   1   2
-  0 [#0][#1][#2]
-  1 [ 1][ 2][ 2]
+ Board:     :     0   1   2
+              0 [#0][#1][#2]
+              1 [ 1][ 2][ 2]
 
               | #0    | #1    | #2    |             | array index
               |-------+-------+-------|             |
@@ -48,7 +48,8 @@ type Solution = bool[]
 
 *)
 
-// TODO break down the board into independent components to reduce time
+// The algorithm to split the board into independent components is limited
+// TODO use flood fill and image partitioning to break down board into independent solution sets
 
 /// Provides statements about the board in the format of (COORD OF UNKNOWN, DEPENDENT SQS),
 /// which serves as an index for solution slots.
@@ -107,7 +108,7 @@ let backtrack (findOne : bool) (board : Board) (idx : Index) =
 
         sln [ false, false, true, false, false, true, false, true ]
                             ^
-                        idx = 3
+                        idx = 2
 
       while there are more branches to visit (ptr > -1):
         backtrack <- false (if backtrack is true, then backtracking happens)
@@ -120,12 +121,12 @@ let backtrack (findOne : bool) (board : Board) (idx : Index) =
               backtrack <- true
         else
           if there is another branch to visit (sln.[ptr] = false):
-            advance (sln.[ptr] = true)
+            advance: (sln.[ptr] <- true)
           else
             backtrack <- true
 
         if backtrack:
-          while sln[ptr] is a dead end (sln.[ptr] = true)
+          while sln.[ptr] is a dead end (sln.[ptr] = true)
             ptr --
           advance
     *)
@@ -138,10 +139,9 @@ let backtrack (findOne : bool) (board : Board) (idx : Index) =
           let i = ptr
           let coord, numsqs = idx.[i]
           let numsqs' = Array.ofSeq numsqs
-          let mutable loop = true // true to keep looping
+          let mutable loop = true // true to keep looping (there is no break in F#)
           let mutable result = true // result of the test
           let mutable j = 0 // loop counter
-          // this is a crude for loop written as while to make breaking possible
           // for each of the associated squares
           while loop do
             let x, y = numsqs'.[j]
@@ -173,18 +173,18 @@ let backtrack (findOne : bool) (board : Board) (idx : Index) =
             if j >= numsqs'.Length then loop <- false
           result)
       then
-        // searched in the end: solution accepted
+        // searched reached the end: solution accepted
         if ptr = ls - 1 then
           slns <- Array.copy sln :: slns
           if sln.[ptr] then
             // backtrack if no other alternative is considered
             //  [false, true, true] -> [false, true, true]
             //                ^         ^
-            // OR
-            // [false, true, false] -> [false, true, true]
             doBack <- true
           else
             // seek next alternative
+            // [false, true, false] -> [false, true, true]
+            //               ^                       ^
             sln.[ptr] <- true
             vBoard.[cx, cy] <- Flag
         else
@@ -227,7 +227,7 @@ let backtrack (findOne : bool) (board : Board) (idx : Index) =
 let backtrackAll = backtrack false
 let backtrackOne = backtrack true
 
-/// Find squares that is 100% sure about what is under there.
+/// Find squares that are 100% sure about what is under there.
 let commons (slns : Solution list) : bool[] =
   let slns = slns
   let sln = slns.[0]
@@ -243,20 +243,21 @@ let commons (slns : Solution list) : bool[] =
 /// prob of mines of a square = number of mines / number of solutions
 let slnlist (probs : bool) (slns : Solution list) (index : Index) : SolutionList =
   let slns = slns
-  if slns.Length = 0 then [| |]
+  if slns.IsEmpty then [| |]
   else
     let sln = slns.[0]
     let n = slns.Length
     seq {
-      for i in 0..sln.Length - 1 do
+      for i in 0..sln.Length - 1 do // for each solution
         let m =
           // count mines per index
           seq {
             for j in 0..slns.Length - 1 -> slns.[j].[i]
           }
-          |> Seq.filter id
-          |> Seq.length
+          |> Seq.filter id // filter only trues
+          |> Seq.length // and count the number
         let co = fst index.[i]
+        // yield result
         if m = 0 then yield NoMine, co
         elif m = n then yield HasMine, co
         elif probs then yield Prob(m, n), co

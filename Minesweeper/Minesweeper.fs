@@ -6,6 +6,7 @@ open System.Collections.Generic
 
 #region "Types"
 
+/// A number on the minesweeper board: empty, mine, number, invalid
 type Number = byte
 
 /// Represents a square with no mines around it.
@@ -32,12 +33,7 @@ type Flag =
   | Flag
   | Open
 
-(*
-/// Used in forallSquares to break the iteration
-exception ForallBreak
-*)
-
-/// Used in some board operations
+/// Thrown in some board operations
 exception BoardException of string
 
 /// A coordinate
@@ -47,12 +43,12 @@ type Coordinate = int * int
 type SolutionSquare =
   | HasMine
   | NoMine
-  | Prob of int * int // for precision reasons, used rational instead of float
+  | Prob of int * int // for precision reasons, I used rational instead of float
 
 /// Represents a list of squares to be flagged/opened or is likely to be a mine as told by a solver
 type SolutionList = (SolutionSquare * Coordinate) []
 
-/// Repersents a Minesweeper board
+/// Represents a Minesweeper board
 type Board = {
   /// Digging part: can change
   Flags : Flag[,]
@@ -66,7 +62,7 @@ type Board = {
 }
 
 #endregion
-#region "Random Functions"
+#region "Random Number Functions"
 
 let rand = new System.Random()
 let randInt = rand.Next
@@ -75,11 +71,11 @@ let coinFlip() = rand.NextDouble() > 0.5
 
 #endregion
 
-let exc x = raise (BoardException x)
+let private exc x = raise (BoardException x)
 
 let size (board : Board) = board.Width, board.Height
 
-let around' board width height x y =
+let private around' board width height x y =
   seq {
     for x1 in [ x - 1; x; x + 1 ] do
       for y1 in [ y - 1; y; y + 1 ] do
@@ -94,7 +90,7 @@ let around' board width height x y =
 let around (board : Board) =
   around' board board.Width board.Height
 
-/// Internal: Generates a 2D boolean array,
+/// Generates a 2D boolean array,
 /// of the specified number of mines.
 let boolBoard w h c cx cy =
   let board = Array2D.zeroCreate w h
@@ -172,20 +168,6 @@ let forallSquares p (board : Board) =
   |> Seq.tryFindIndex not
   |> (fun x -> x.IsNone)
 
-(*
-/// Checks if p is true for all squares on the board.
-let forallSquares p (board : Board) =
-  let flags, board = board.Flags, board.Board
-  try
-    Array2D.iteri (fun x y a ->
-      /// break as soon as one statement is false.
-      if not <| p x y (flags.[x, y]) (board.[x, y]) then raise ForallBreak
-    ) flags
-    true
-  with
-    | ForallBreak -> false
-*)
-
 /// Check if the board is solved.
 let solved =
   forallSquares (fun x y flag mine ->
@@ -223,8 +205,8 @@ let flagsAround x y board =
   ) x y board
   !i
 
-/// Create an array of buried squares
-let bury width height = Array2D.create width height Close
+/// Creates an array of buried squares
+let private bury width height = Array2D.create width height Close
 
 /// If the game is over, throw an exception.
 let checkState (board : Board) =

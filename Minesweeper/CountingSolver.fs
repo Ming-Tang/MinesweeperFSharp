@@ -2,10 +2,14 @@
 
 open SHiNKiROU.Minesweeper.Board
 
+(* Counting Solver *)
+
 /// Provides statements about the board in the format of (NUMBER OF MINES, AMONG THESE SQUARES)
 let index (board : Board) =
   let flags = board.Flags
   let bboard = board.Board
+
+  // gather information about the board
   let mutable cs : Set<Number * Set<int * int>> =
     Set.ofSeq
     <| seq {
@@ -16,7 +20,8 @@ let index (board : Board) =
           if flags.[x, y] = Open && n > 0uy && n < 9uy then
             // c = number of mines, list of squares around the number
             let c =
-              around board x y // for each squares around the number
+              // for each squares around the number
+              around board x y
               |> Seq.map (fun (x, y) ->
                 match flags.[x, y] with
                 | Flag -> true, None // deduct for flags
@@ -36,11 +41,11 @@ let index (board : Board) =
             | _, b -> if b <> Set.empty then yield c
     }
 
-  // repeated application of the subset rule
+  // keep applying the subset rule until no more changes happen
   let mutable changed = true
+  // O(n^3) loop
   while changed do
     changed <- false
-    // subset rule
     for e1 in cs do
       for e2 in cs do
         if e1 <> e2 then
