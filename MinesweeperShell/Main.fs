@@ -99,17 +99,17 @@ A minesweeper solver written in F#.
 
 [Cheats]
   Allows the computer to place some flags and open some squares for you.
-  The polynomial time cheat is O(n^3), it works by repeatedly reducing
-  statements about the board. The exponential time cheat is O(2^n), it
-  works by searching all solutions by backtracking.
-  At most times, the polynomial time cheat is sufficient. However,
-  positions that only exponential time cheat can solve have been found
+  The counting solver is O(n^3), it works by repeatedly reducing
+  statements about the board. The backtracking solver is O(2^n), it
+  works by backtracking.
+  At most times, the counting solver is sufficient. However, there are
+  positions that only backtracking solver can solve have been found
   at Expert levels.
 
-  - p: use polynomial time cheat
-  - e: use exponential time cheat
+  - p: use counting solver (polynomial)
+  - e: use backtracking solver (exponential)
   - c: iterate cheats
-  - i: show probabilities (after cheat)
+  - i: show probabilities (after using a cheat)
   - i X Y: show probability for one square"
 
   // a list of commands, with argument patterns to match against
