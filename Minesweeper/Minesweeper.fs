@@ -33,6 +33,12 @@ type Flag =
   | Flag
   | Open
 
+/// Represents an external view of a square
+type View =
+  | Flagged
+  | NotOpened
+  | Opened of Number
+
 /// Thrown in some board operations
 exception BoardException of string
 
@@ -122,6 +128,15 @@ let checkIndex x y board =
   if x >= w || y >= h then
     exc (sprintf "Index out of range: %d %d." x y)
 
+/// Returns the public information of the board.
+let view (board : Board) =
+  Array2D.init board.Width board.Height (fun x y ->
+    match board.Flags.[x, y], board.Board.[x, y] with
+    | Flag, _ -> Flagged
+    | Close, _ -> NotOpened
+    | Open, _ -> Opened board.Board.[x, y]
+  )
+
 /// Formats a board into console-friendly text representation.
 /// If the first argument, zeroBase is true, the counting
 /// scale will start from zero. (otherwise, one)
@@ -134,28 +149,40 @@ let textFormat zeroBase (board : Board) =
     str.Append(((x + n) % 10).ToString()) |> ignore
 
   // x-scale
-  let _ = str.Append("\n-+")
-             .Append(Array.init width (fun _ -> '-'))
-             .Append('\n')
+  str.Append("\n-+")
+     .Append(Array.init width (fun _ -> '-'))
+     .Append('\n') |> ignore
+
+  let info = view board
+  let gO = board.State = BoardState.GameOver
 
   for y = 0 to height - 1 do
     // y-scale
-    let _ = str.Append(((y + n) % 10).ToString())
-               .Append('|')
+    str.Append(((y + n) % 10).ToString())
+       .Append('|') |> ignore
 
     // squares
     for x = 0 to width - 1 do
-      str.Append(
-        match flags.[x, y], bboard.[x, y] with
-        | Flag, _ -> '#'
-        | Close, MINE -> if board.State = BoardState.GameOver then '*' else ' '
-        | Close, _ -> ' '
-        | Open, MINE -> '*'
-        | Open, 0uy -> '.'
-        | Open, n -> n.ToString().[0]
-      ) |> ignore
+      let isMine = bboard.[x, y] = MINE
+      let ch = 
+        match info.[x, y] with
+        | Flagged -> '#' 
+        | NotOpened -> ' '
+        | Opened(EMPTY) -> '.'
+        | Opened(b) -> b.ToString().[0]
+      if gO then
+        // if game over: expose mines
+        str.Append(
+          if isMine then
+            if info.[x, y] = Flagged then 'X' // wrong flag
+            else '*'
+          else ch
+        ) |> ignore
+      else
+        str.Append(ch) |> ignore
+    // x
     str.Append(System.Environment.NewLine) |> ignore
-
+  // y
   str.ToString()
 
 /// Checks if p is true for all squares on the board.
